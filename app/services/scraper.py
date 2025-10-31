@@ -93,11 +93,24 @@ def scrape_mlh_events(session):
     driver.quit()
 
     today = date.today()
+
     # Only select events starting today or later
-    events = [
-        e for e in soup.find_all("div", class_="event")
-        if (start := parse_date(e.select_one("meta[itemprop='startDate']")["content"])) and start >= today
-    ]
+    events = []
+    for e in soup.find_all("div", class_="event"):
+        start_tag = e.select_one("meta[itemprop='startDate']")
+        end_tag = e.select_one("meta[itemprop='endDate']")
+        if not start_tag or not end_tag:
+            continue
+        start = parse_date(start_tag["content"]).date()
+        end = parse_date(end_tag["content"]).date()
+        
+        # Only include ongoing or future events
+        if end < today:
+            continue
+    
+        events.append(e)
+
+
     print(f"[DEBUG] MLH found {len(events)} future events")
 
     for e in events:
@@ -195,8 +208,7 @@ def scrape_devpost_events(session):
             date_tag = h.select_one(".submission-period")
             start_date, end_date = parse_devpost_date(date_tag.text) if date_tag else (None, None)
 
-            if not start_date or start_date < today:
-                # Skip past hackathons
+            if not start_date or end_date < today:
                 continue
 
             city = state = ""
