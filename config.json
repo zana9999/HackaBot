@@ -1,6 +1,8 @@
 {
-  "city": ["", ""], 
-  "online": [],                
-  "tags": [""],        
-  "name_contains": [""]     
+  "city": ["Toronto", "Mississauga", "North York"],
+  "state": ["Ontario"],
+  "online": [true],
+  "tags": [""],
+  "name_contains": [""],
+  "platform": [""]
 }

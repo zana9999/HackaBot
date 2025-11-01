@@ -72,7 +72,7 @@ def send_DiscordMessage(hackathons):
     if not hackathons:
         return
 
-    webhook_url = "https://discord.com/api/webhooks/1433976383326916689/5Lg0LuXAR0yKtaemQFcwdk6_kql5-KA26noo3jbrzEkbry14ONTGoR_K3mQen4dbkd5d"
+    webhook_url = "https://discord.com/api/webhooks/1434024390806339675/mFWAXRmqnirbcJWq2PLBZjBCr6TyiiziCl5eB1QZFS4tSdlkWmfRq3QsYV6u3VpDmrPf"
 
     CHUNK_SIZE = 10 
 
