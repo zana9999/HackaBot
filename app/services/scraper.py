@@ -13,6 +13,7 @@ from app.services.discordnotifs import send_discord_notification
 from app.services.filter import passes_filters
 import json
 from app.database import SessionLocal
+from dateutil import parser as date_parser
 
 
 
@@ -27,6 +28,12 @@ def clean_text(text):
     return text.strip().replace("\n", " ").replace("\t", " ") if text else ""
 
 
+from dateutil import parser as date_parser
+import re
+
+from dateutil import parser as date_parser
+import re
+
 def parse_devpost_date(date_str):
     """Parse Devpost submission period string into start_date and end_date"""
     print(f"[DATE DEBUG] Attempting to parse: '{date_str}'")
@@ -34,73 +41,74 @@ def parse_devpost_date(date_str):
     try:
         # Clean up the string and normalize dashes
         date_str = date_str.strip()
-        # Replace en dash (–), em dash (—), and other dash variants with regular hyphen
         date_str = date_str.replace("–", "-").replace("—", "-").replace("−", "-")
         
         print(f"[DATE DEBUG] Normalized: '{date_str}'")
         
-        # Handle ranges with " - " or "-" separator
-        if " - " in date_str or "-" in date_str:
-            # Split by " - " first, if not found try just "-"
-            if " - " in date_str:
-                parts = date_str.split(" - ")
-            else:
-                parts = date_str.split("-")
+        # Extract year from the string
+        year_match = re.search(r'\b(20\d{2})\b', date_str)
+        if not year_match:
+            print(f"[DATE DEBUG] No year found")
+            return None, None
+        year = int(year_match.group(1))
+        
+        # Check if it's a range (contains " - ")
+        if "-" in date_str:
+            # Split on the dash
+            parts = date_str.split("-", 1)  # Only split on first dash
+            if len(parts) != 2:
+                print(f"[DATE DEBUG] Invalid range format")
+                return None, None
                 
             start_str = parts[0].strip()
             end_str = parts[1].strip()
             
-            print(f"[DATE DEBUG] Found range: start='{start_str}', end='{end_str}'")
+            print(f"[DATE DEBUG] Range parts: '{start_str}' and '{end_str}'")
             
-            # Parse end date first to get the year
-            try:
-                end_date = datetime.strptime(end_str, "%b %d, %Y").date()
-                print(f"[DATE DEBUG] Parsed end_date: {end_date}")
-            except Exception as e:
-                print(f"[DATE DEBUG] Failed to parse end date '{end_str}': {e}")
-                return None, None
+            # Check if end_str is just a day number (like "15, 2025")
+            # Pattern: digit(s) followed by comma and year
+            if re.match(r'^\d{1,2},\s*\d{4}$', end_str):
+                # Same month range: "Feb 14 - 15, 2025"
+                # Extract the month from start_str
+                month_match = re.match(r'^([A-Za-z]+)\s+(\d{1,2})$', start_str)
+                if month_match:
+                    month_str = month_match.group(1)
+                    start_day = month_match.group(2)
+                    end_day = end_str.split(',')[0].strip()
+                    
+                    start_date = date_parser.parse(f"{month_str} {start_day}, {year}").date()
+                    end_date = date_parser.parse(f"{month_str} {end_day}, {year}").date()
+                    
+                    print(f"[DATE DEBUG] Same month range: {start_date} to {end_date}")
+                    return start_date, end_date
             
-            # Try to parse start date
+            # Different month range or has full date on both sides
+            # Try parsing both parts directly
             try:
-                # If start has year: "Jan 15, 2025"
-                start_date = datetime.strptime(start_str, "%b %d, %Y").date()
-                print(f"[DATE DEBUG] Parsed start_date (with year): {start_date}")
-            except:
-                try:
-                    # If start has no year: "Jan 15" or just "15"
-                    if start_str.isdigit():
-                        # Just a day number like "5" from "Nov 5 – 7, 2025"
-                        start_date = end_date.replace(day=int(start_str))
-                        print(f"[DATE DEBUG] Parsed start_date (day only): {start_date}")
-                    else:
-                        # Has month like "Nov 5"
-                        start_date = datetime.strptime(start_str, "%b %d").replace(year=end_date.year).date()
-                        print(f"[DATE DEBUG] Parsed start_date (no year): {start_date}")
-                except Exception as e:
-                    print(f"[DATE DEBUG] Failed to parse start date '{start_str}': {e}")
-                    return None, None
-        
-        # Handle single date
-        elif "," in date_str:
-            try:
-                start_date = end_date = datetime.strptime(date_str.strip(), "%b %d, %Y").date()
-                print(f"[DATE DEBUG] Single date parsed: {start_date}")
+                # Parse end date first (usually has the year)
+                end_date = date_parser.parse(end_str).date()
+                
+                # Parse start date - add year if missing
+                if year_match and str(year) not in start_str:
+                    start_str_with_year = f"{start_str}, {year}"
+                    start_date = date_parser.parse(start_str_with_year).date()
+                else:
+                    start_date = date_parser.parse(start_str).date()
+                
+                print(f"[DATE DEBUG] Different month range: {start_date} to {end_date}")
+                return start_date, end_date
             except Exception as e:
-                print(f"[DATE DEBUG] Failed to parse single date '{date_str}': {e}")
+                print(f"[DATE DEBUG] Range parse error: {e}")
                 return None, None
-        
-        # Unknown format
         else:
-            print(f"[DATE DEBUG] Unknown date format (no range or comma found)")
-            return None, None
+            # Single date
+            single_date = date_parser.parse(date_str).date()
+            print(f"[DATE DEBUG] Parsed single date: {single_date}")
+            return single_date, single_date
             
-        return start_date, end_date
-        
     except Exception as e:
-        print(f"[DATE DEBUG] Unexpected error parsing '{date_str}': {e}")
+        print(f"[DATE DEBUG] Parse error: {e}")
         return None, None
-
-
 
 def save_hackathon(session: Session, name, link, start_date=None, end_date=None,
                    platform="", city="", state="", online=False, tags=None):
