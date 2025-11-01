@@ -39,23 +39,19 @@ def parse_devpost_date(date_str):
     print(f"[DATE DEBUG] Attempting to parse: '{date_str}'")
     
     try:
-        # Clean up the string and normalize dashes
         date_str = date_str.strip()
         date_str = date_str.replace("–", "-").replace("—", "-").replace("−", "-")
         
         print(f"[DATE DEBUG] Normalized: '{date_str}'")
         
-        # Extract year from the string
         year_match = re.search(r'\b(20\d{2})\b', date_str)
         if not year_match:
             print(f"[DATE DEBUG] No year found")
             return None, None
         year = int(year_match.group(1))
         
-        # Check if it's a range (contains " - ")
         if "-" in date_str:
-            # Split on the dash
-            parts = date_str.split("-", 1)  # Only split on first dash
+            parts = date_str.split("-", 1)   
             if len(parts) != 2:
                 print(f"[DATE DEBUG] Invalid range format")
                 return None, None
@@ -65,11 +61,7 @@ def parse_devpost_date(date_str):
             
             print(f"[DATE DEBUG] Range parts: '{start_str}' and '{end_str}'")
             
-            # Check if end_str is just a day number (like "15, 2025")
-            # Pattern: digit(s) followed by comma and year
             if re.match(r'^\d{1,2},\s*\d{4}$', end_str):
-                # Same month range: "Feb 14 - 15, 2025"
-                # Extract the month from start_str
                 month_match = re.match(r'^([A-Za-z]+)\s+(\d{1,2})$', start_str)
                 if month_match:
                     month_str = month_match.group(1)
@@ -82,13 +74,9 @@ def parse_devpost_date(date_str):
                     print(f"[DATE DEBUG] Same month range: {start_date} to {end_date}")
                     return start_date, end_date
             
-            # Different month range or has full date on both sides
-            # Try parsing both parts directly
             try:
-                # Parse end date first (usually has the year)
                 end_date = date_parser.parse(end_str).date()
                 
-                # Parse start date - add year if missing
                 if year_match and str(year) not in start_str:
                     start_str_with_year = f"{start_str}, {year}"
                     start_date = date_parser.parse(start_str_with_year).date()
@@ -101,7 +89,6 @@ def parse_devpost_date(date_str):
                 print(f"[DATE DEBUG] Range parse error: {e}")
                 return None, None
         else:
-            # Single date
             single_date = date_parser.parse(date_str).date()
             print(f"[DATE DEBUG] Parsed single date: {single_date}")
             return single_date, single_date
@@ -149,7 +136,6 @@ def send_DiscordMessage(hackathons):
             parts = h.split(" | ")
             title = parts[0] 
             raw_location = parts[1] if len(parts) > 1 else ""
-            # Clean location
             location = raw_location.replace(",", "").strip() or "ONLINE"
 
             dates = parts[2] if len(parts) > 2 else ""
@@ -277,16 +263,15 @@ def scrape_devpost_events(session: Session):
 
     seen_links = set()
     consecutive_ended_count = 0
-    MAX_CONSECUTIVE_ENDED = 25  # Stop after 25 consecutive ended hackathons
-    SCROLL_PAUSE = 3  # Increased wait time for content to load
+    MAX_CONSECUTIVE_ENDED = 25  
+    SCROLL_PAUSE = 3  
     previous_tile_count = 0
     no_new_tiles_count = 0
-    MAX_NO_NEW_TILES = 5  # Stop if no new tiles appear after 5 scrolls
+    MAX_NO_NEW_TILES = 5 
 
     print(f"[DEBUG] Starting Devpost scrape. Today's date: {today}")
 
     while True:
-        # Get current tile count before scrolling
         html = driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         hackathons = soup.select(".hackathon-tile")
@@ -294,8 +279,6 @@ def scrape_devpost_events(session: Session):
         
         print(f"[DEBUG] Current tiles on page: {current_tile_count}")
 
-        # Scroll near the bottom (not all the way) to trigger lazy loading
-        # Scroll to 90% of the page height to stay in the "trigger zone"
         driver.execute_script("""
             window.scrollTo({
                 top: document.body.scrollHeight * 0.85,
@@ -304,7 +287,6 @@ def scrape_devpost_events(session: Session):
         """)
         time.sleep(SCROLL_PAUSE)
         
-        # Now scroll closer to trigger more loading
         driver.execute_script("""
             window.scrollTo({
                 top: document.body.scrollHeight - 800,
@@ -313,13 +295,11 @@ def scrape_devpost_events(session: Session):
         """)
         time.sleep(2)
 
-        # Get new tile count after scrolling
         html = driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         hackathons = soup.select(".hackathon-tile")
         new_tile_count = len(hackathons)
 
-        # Check if new tiles were loaded
         if new_tile_count == previous_tile_count:
             no_new_tiles_count += 1
             print(f"[DEBUG] No new tiles loaded ({no_new_tiles_count}/{MAX_NO_NEW_TILES})")
@@ -331,7 +311,6 @@ def scrape_devpost_events(session: Session):
             print(f"[DEBUG] New tiles loaded! {previous_tile_count} -> {new_tile_count}")
             previous_tile_count = new_tile_count
 
-        # Track if we found any future hackathons in this batch
         found_future_in_batch = False
         processed_in_batch = 0
         
@@ -341,10 +320,9 @@ def scrape_devpost_events(session: Session):
             if not link or link in seen_links:
                 continue
 
-            seen_links.add(link)  # Mark as seen immediately
+            seen_links.add(link) 
             processed_in_batch += 1
 
-            # Parse dates
             date_tag = h.select_one(".submission-period")
             start_date, end_date = parse_devpost_date(date_tag.text) if date_tag else (None, None)
             
@@ -352,11 +330,9 @@ def scrape_devpost_events(session: Session):
                 print(f"[DEBUG] Skipping - no valid dates: {link}")
                 continue
 
-            # Check if hackathon has ended
             if end_date < today:
                 consecutive_ended_count += 1
                 
-                # If we've seen too many ended ones in a row, stop
                 if consecutive_ended_count >= MAX_CONSECUTIVE_ENDED:
                     print(f"[DEBUG] Found {MAX_CONSECUTIVE_ENDED} consecutive ended hackathons. Stopping scrape.")
                     driver.quit()
@@ -366,11 +342,9 @@ def scrape_devpost_events(session: Session):
                     return
                 continue
 
-            # Reset counter when we find a future hackathon
             consecutive_ended_count = 0
             found_future_in_batch = True
 
-            # Extract hackathon details
             name_tag = h.select_one("h3")
             name = clean_text(name_tag.text) if name_tag else "N/A"
             

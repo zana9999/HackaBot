@@ -14,16 +14,14 @@ def run_scraper_job():
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    # Run the job every 24 hours
     scheduler.add_job(run_scraper_job, 'interval', seconds=86400)
     scheduler.start()
     print("Scheduler started and will run every 24 hours")
 
 if __name__ == "__main__":
-    run_scraper_job()  # run immediately when the script starts
+    run_scraper_job()  
     start_scheduler()
 
-    # Keep the script running so the scheduler doesn't exit
     try:
         import time
         while True:
