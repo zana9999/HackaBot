@@ -29,18 +29,75 @@ def clean_text(text):
 
 def parse_devpost_date(date_str):
     """Parse Devpost submission period string into start_date and end_date"""
+    print(f"[DATE DEBUG] Attempting to parse: '{date_str}'")
+    
     try:
-        if "-" in date_str:
-            start_str, end_str = date_str.split("-")
-            end_date = datetime.strptime(end_str.strip(), "%b %d, %Y").date()
+        # Clean up the string and normalize dashes
+        date_str = date_str.strip()
+        # Replace en dash (–), em dash (—), and other dash variants with regular hyphen
+        date_str = date_str.replace("–", "-").replace("—", "-").replace("−", "-")
+        
+        print(f"[DATE DEBUG] Normalized: '{date_str}'")
+        
+        # Handle ranges with " - " or "-" separator
+        if " - " in date_str or "-" in date_str:
+            # Split by " - " first, if not found try just "-"
+            if " - " in date_str:
+                parts = date_str.split(" - ")
+            else:
+                parts = date_str.split("-")
+                
+            start_str = parts[0].strip()
+            end_str = parts[1].strip()
+            
+            print(f"[DATE DEBUG] Found range: start='{start_str}', end='{end_str}'")
+            
+            # Parse end date first to get the year
             try:
-                start_date = datetime.strptime(start_str.strip(), "%b %d").replace(year=end_date.year).date()
+                end_date = datetime.strptime(end_str, "%b %d, %Y").date()
+                print(f"[DATE DEBUG] Parsed end_date: {end_date}")
+            except Exception as e:
+                print(f"[DATE DEBUG] Failed to parse end date '{end_str}': {e}")
+                return None, None
+            
+            # Try to parse start date
+            try:
+                # If start has year: "Jan 15, 2025"
+                start_date = datetime.strptime(start_str, "%b %d, %Y").date()
+                print(f"[DATE DEBUG] Parsed start_date (with year): {start_date}")
             except:
-                start_date = end_date
+                try:
+                    # If start has no year: "Jan 15" or just "15"
+                    if start_str.isdigit():
+                        # Just a day number like "5" from "Nov 5 – 7, 2025"
+                        start_date = end_date.replace(day=int(start_str))
+                        print(f"[DATE DEBUG] Parsed start_date (day only): {start_date}")
+                    else:
+                        # Has month like "Nov 5"
+                        start_date = datetime.strptime(start_str, "%b %d").replace(year=end_date.year).date()
+                        print(f"[DATE DEBUG] Parsed start_date (no year): {start_date}")
+                except Exception as e:
+                    print(f"[DATE DEBUG] Failed to parse start date '{start_str}': {e}")
+                    return None, None
+        
+        # Handle single date
+        elif "," in date_str:
+            try:
+                start_date = end_date = datetime.strptime(date_str.strip(), "%b %d, %Y").date()
+                print(f"[DATE DEBUG] Single date parsed: {start_date}")
+            except Exception as e:
+                print(f"[DATE DEBUG] Failed to parse single date '{date_str}': {e}")
+                return None, None
+        
+        # Unknown format
         else:
-            start_date = end_date = datetime.strptime(date_str.strip(), "%b %d, %Y").date()
+            print(f"[DATE DEBUG] Unknown date format (no range or comma found)")
+            return None, None
+            
         return start_date, end_date
-    except:
+        
+    except Exception as e:
+        print(f"[DATE DEBUG] Unexpected error parsing '{date_str}': {e}")
         return None, None
 
 
