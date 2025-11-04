@@ -1,6 +1,5 @@
 import requests
 
-
 def send_DiscordMessage(hackathons):
     if not hackathons:
         return
