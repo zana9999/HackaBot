@@ -1,25 +1,76 @@
-# HackaBot 🚀
+# HackaBot 🤖
 
-HackaBot is an automated hackathon aggregator and notifier that collects upcoming hackathons from MLH and Devpost, filters for future events, stores structured details in a database, and alerts users to new opportunities.
-
----
-
-## Features
-
-- **Automatic scraping:** Handles infinite scroll, pagination, and dynamically loaded content.  
-- **Event filtering:** Only stores and notifies users about upcoming hackathons that aligns with users preferences!  
-- **Structured data storage:** Tracks event name, link, start/end dates, location, online/offline status, and tags.  
-- **Notifications:** Sends alerts via Discord when new hackathons are added.  
-- **Extensible:** Easily add more platforms, filters, or notification channels.
+An automated hackathon aggregator and notifier that collects upcoming hackathons from MLH and Devpost, filters for future events, stores structured details in a database, and alerts users about new opportunities. Built to save developers time and increase participation in hackathons.
 
 ---
 
-## Tech Stack
+# Features ✨
 
-- **Language:** Python  
-- **Scraping & Automation:** Selenium, BeautifulSoup  
-- **Database:** SQLAlchemy with SQLite
-- **Scheduler:** APScheduler  
-- **Notifications:** Discord  
+**Automatic Scraping:** Handles infinite scroll, pagination, and dynamically loaded content from MLH and Devpost.
+
+**Event Filtering:** Only stores hackathons that aligns with user prefernces starting today or later, ignoring past events.
+
+**Structured Data Storage:** Tracks event name, link, start/end dates, location, online/offline status, and tags.
+
+**Notifications:** Sends alerts via Discord for new hackathons.
+
+**Extensible:** Supports adding more platforms, custom filters, or notification channels without major refactoring.
 
 ---
+
+# Tech Stack 🛠️
+
+| Layer         | Technology                        |
+| ------------- | --------------------------------- |
+| Scraping      | Python, Selenium, BeautifulSoup   |
+| Database      | SQLAlchemy, SQLite                |
+| Scheduler     | APScheduler                       |
+| Notifications | Discord Webhooks                  |
+
+---
+
+# Installation ⚡
+
+```bash
+git clone https://github.com/zana9999/HackaBot.git
+cd HackaBot
+```
+
+**Requirements dependencies:**
+
+```
+selenium>=4.15.0
+beautifulsoup4>=4.12.2
+requests>=2.31.0
+apscheduler>=3.10.0
+sqlalchemy>=2.1.0
+python-dotenv>=1.1.1
+```
+
+---
+
+# Usage 🚀
+
+**Run the scraper and scheduler:**
+
+```bash
+python -m app.scheduler.scheduler
+```
+
+* Scrapes MLH and Devpost for upcoming hackathons.
+* Stores them in the database (`hackabot.db`).
+* Sends Discord notifications for newly added events.
+* Scheduler runs every 24 hours automatically.
+
+---
+
+# Impact / Metrics 📊
+
+* Aggregates hackathons automatically, saving developers hours of searching.
+* Only future events are stored, keeping the database clean and relevant.
+* Supports notifications to increase hackathon participation.
+* Scales easily: add new platforms, filters, or notification channels without major refactoring.
+
+---
+
+
