@@ -1,8 +1,7 @@
 # HackaBot 🤖
 
-An automated hackathon aggregator and notifier that collects upcoming hackathons from MLH and Devpost, filters for future events, stores structured details in a database, and alerts users about new opportunities. Built to save developers time and increase participation in hackathons.
+HackaBot is an automated hackathon aggregator and notifier that collects upcoming hackathons from MLH and Devpost, filters for user preferences and future events, stores structured details in a database, and alerts users about new opportunities. It saves developers hours of searching, keeps the database clean by only storing future events, increases hackathon participation through notifications.
 
----
 
 # Features ✨
 
@@ -61,15 +60,6 @@ python -m app.scheduler.scheduler
 * Stores them in the database (`hackabot.db`).
 * Sends Discord notifications for newly added events.
 * Scheduler runs every 24 hours automatically.
-
----
-
-# Impact / Metrics 📊
-
-* Aggregates hackathons automatically, saving developers hours of searching.
-* Only future events are stored, keeping the database clean and relevant.
-* Supports notifications to increase hackathon participation.
-* Scales easily: add new platforms, filters, or notification channels without major refactoring.
 
 ---
 
