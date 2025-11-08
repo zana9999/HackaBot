@@ -28,8 +28,9 @@ HackaBot is an automated hackathon aggregator and notifier that collects upcomin
 
 ---
 # Screenshots
-<img width="1979" height="1435" alt="image" src="https://github.com/user-attachments/assets/4af3eede-0261-4e84-801c-9793f68e6f1e" />
-<img width="1595" height="1236" alt="image" src="https://github.com/user-attachments/assets/1f3d601d-fa11-48d8-bf83-3aead7213982" />
+<img src="https://github.com/user-attachments/assets/4af3eede-0261-4e84-801c-9793f68e6f1e" width="800" height="580" alt="Image 1" />
+
+<img src="https://github.com/user-attachments/assets/6ce8a9c1-9cde-4050-a163-a475d7949d08" width="800" height="556" alt="Image 2" />
 
 ---
 
