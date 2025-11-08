@@ -13,7 +13,7 @@ HackaBot is an automated hackathon aggregator and notifier that collects upcomin
 
 **Notifications:** Sends alerts via Discord for new hackathons.
 
-**Extensible:** Supports adding more platforms, custom filters, or notification channels without major refactoring.
+**Extensible:** Supports adding more platforms, custom filters, or notification channels without major refactoring to the code setup.
 
 ---
 
@@ -25,6 +25,11 @@ HackaBot is an automated hackathon aggregator and notifier that collects upcomin
 | Database      | SQLAlchemy, SQLite                |
 | Scheduler     | APScheduler                       |
 | Notifications | Discord Webhooks                  |
+
+---
+# Screenshots
+<img width="1979" height="1435" alt="image" src="https://github.com/user-attachments/assets/4af3eede-0261-4e84-801c-9793f68e6f1e" />
+<img width="1595" height="1236" alt="image" src="https://github.com/user-attachments/assets/1f3d601d-fa11-48d8-bf83-3aead7213982" />
 
 ---
 
@@ -62,5 +67,8 @@ python -m app.scheduler.scheduler
 * Scheduler runs every 24 hours automatically.
 
 ---
+
+# Improvements
+- Potentially add a description feature to the hackathon message. 
 
 
